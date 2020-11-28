@@ -1,0 +1,69 @@
+here is the code for the voice controlled bot. 
+this bot can be controlled by giving commands via google assistant in the phone using blynk app,
+you need to install blynk app and also get details for our board. ESP8266 wifi board is used in this case. 
+
+
+
+
+
+
+
+#define BLYNK_PRINT Serial//redefine  BLYNK_PRINT as Serial
+#include <ESP8266WiFi.h>//header file for controlling wifi
+#include <BlynkSimpleEsp8266.h>//header for blynk
+
+char auth[] = "YourAuthToken";// indentification of your board like phone number
+char ssid[] = "YourNetworkName";// your Hotspot name
+char pass[] = "YourPassword";// your Hotspot password
+WidgetLCD lcd(V1);//creating LCD as advanced mode and declaring pin for it
+
+//................ultrasonic pin .......................
+#define trigPin D3 //declaring trigger pin
+#define echoPin D4 //declaring echo pin
+
+long duration; // declaring variable for storing time 
+int distance; // declaring variable for storing distance 
+
+
+//.................. ultrasonic()..................
+void ultrasonic()
+{
+  digitalWrite(trigPin, LOW);//Intialize trigpin to low
+delayMicroseconds(2);//wait for 2 micro seconds
+
+digitalWrite(trigPin, HIGH); // Sets the trigPin on HIGH state for 10 micro seconds
+delayMicroseconds(10);
+digitalWrite(trigPin, LOW);// After 10 micro seconds make it low
+
+
+duration = pulseIn(echoPin, HIGH);// Reads the echoPin, returns the sound wave travel time in microseconds
+
+distance= duration*0.034/2; // Calculating the distance
+
+// Prints the distance on the Serial Monitor
+Serial.print("Distance: ");
+Serial.println(distance);
+delay(100);
+}
+
+
+void setup()
+{
+  Serial.begin(9600);//setting the speed of communication between your laptop and board
+
+  Blynk.begin(auth, ssid, pass);// connecting to Network
+ //................ultrasonic setup.....................
+ pinMode(trigPin, OUTPUT); // Sets the trigPin as an Output
+ pinMode(echoPin, INPUT); // Sets the echoPin as an Input 
+}
+
+void loop()
+{
+  ultrasonic(); //call the ultrasonic function
+  lcd.clear();//clear the display
+  lcd.print(0, 0, "Distance in cm"); // use: (position X: 0-15, position Y: 0-1, "Message you want to print")
+  Serial.print(distance);//printing in computer
+  Serial.println("Cm");
+  lcd.print(7, 1, distance);//print distance in mobile
+  Blynk.run();//communicate to mobile
+}
